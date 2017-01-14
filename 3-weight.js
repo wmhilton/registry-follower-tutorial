@@ -2,7 +2,6 @@
 const watt = require('watt')
 const level = require('level')
 const levelgraph = require('levelgraph')
-const through = require('through2')
 // const got = require('got')
 const Gauge = require('gauge')
 
@@ -35,13 +34,3 @@ const main = watt(function* (next) {
   console.log('done')
 })
 main()
-
-// // All packages that depend indirectly on X.
-// db.searchStream([{
-//   subject: db.v('x'),
-//   predicate: 'dependsOn',
-//   object: 'yael'
-// }]).pipe(through.obj(function (result, encoding, done) {
-//   this.push(result.x + '\n')
-//   return done()
-// })).pipe(process.stdout)

@@ -1,3 +1,22 @@
+Files:
+
+- 1-clone.js - stream the npm registry into leveldb storing only the dependency relationships
+- 2-download-counts.js - goes through all the unique package names and fetches the download count for the last month
+- 3-weight.js - divide the download count by the total # of downloads
+
+- query.js - given a package name as an argument, find all of the packages that depend on it, and all the packages that
+depend on *those* packages, ad infinitum. Will give you numbers like 95 THOUSAND for `lodash` etc.
+
+TODO:
+- authors
+- formalize the idea in query.js and weight it by the amount that packages are downloaded to compute some kind of measure of "impact"
+- calculate "impact" for each module
+- figure out which authors have had the most impact
+- figure out which modules are the weakest links - things like `left-pad`
+- do all the things
+
+
+# Original README
 #so you want to write a follower
 > ch-ch-ch-ch-changes
 

@@ -1,6 +1,5 @@
 'use strict'
 const ChangesStream = require('changes-stream')
-const through = require('through2')
 const got = require('got')
 
 const level = require('level')
