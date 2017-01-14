@@ -11,14 +11,6 @@ const db = levelgraph(level('npm'))
 const gauge = new Gauge()
 const registryUrl = 'https://replicate.npmjs.com'
 
-function format (parent, child) {
-  return {
-    subject: parent,
-    predicate: 'dependsOn',
-    object: child
-  }
-}
-
 got(registryUrl, {json: true}).then(response => {
   // Find out how many change objects there are total so we know when's a good time to stop.
   let finalUpdate = response.body.update_seq

@@ -31,6 +31,10 @@ const main = watt(function* (next) {
     gauge.show('progress', (1 - results.length / numpkgs))
   }
   gauge.hide()
+  console.log('check that total weight adds up to 1 (or close enough)')
+  results = yield db.get({predicate: 'downloads'}, next)
+  total = results.map(x => x.weight).reduce((x, y) => x + y)
+  console.log('total weight adds up to', total)
   console.log('done')
 })
 main()

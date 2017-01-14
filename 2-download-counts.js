@@ -19,7 +19,6 @@ got(registryUrl, {json: true}).then(response => {
     include_docs: true
   })
   changes.on('data', function (change) {
-    // Break each package up into triples like parent:dependsOn:child
     let pkgName = change.doc.name
     got(`https://api.npmjs.org/downloads/point/last-month/${encodeURIComponent(pkgName)}`, {json: true})
     .then(response => {
