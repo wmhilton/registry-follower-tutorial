@@ -1,6 +1,6 @@
 {
-  "name": "registry-follower-tutorial",
-  "version": "1.0.0",
+  "name": "registry-graphdb",
+  "version": "0.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,21 +10,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ashleygwilliams/registry-follower-tutorial.git"
+    "url": "git+https://github.com/wmhilton/registry-graphdb.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ashleygwilliams/registry-follower-tutorial/issues"
+    "url": "https://github.com/wmhilton/registry-graphdb/issues"
   },
-  "homepage": "https://github.com/ashleygwilliams/registry-follower-tutorial#readme",
+  "homepage": "https://github.com/wmhilton/registry-graphdb#readme",
   "dependencies": {
     "changes-stream": "^1.1.0",
     "got": "^6.7.1",
     "level": "^1.5.0",
     "levelgraph": "^2.0.0",
+    "normalize-package-data": "^2.3.5",
     "normalize-registry-metadata": "^1.1.2",
+    "sublevel": "^2.4.0",
     "through2": "^2.0.3",
     "watt": "^3.3.0"
   },
