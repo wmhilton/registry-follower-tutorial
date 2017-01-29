@@ -1,45 +1,84 @@
 'use strict'
-const ChangesStream = require('changes-stream')
 const got = require('got')
+const thru = require('thru')
 
 const level = require('level')
-const levelgraph = require('levelgraph')
-const db = levelgraph(level('npm'))
+const sublevel = require('sublevel')
+const db = sublevel(level('npm'))
+const store = db.sublevel('store')
+const downloads = db.sublevel('metrics').sublevel('downloads')
 
 const Gauge = require('gauge')
 const gauge = new Gauge()
-const registryUrl = 'https://replicate.npmjs.com'
 
-got(registryUrl, {json: true}).then(response => {
-  // Find out how many change objects there are total so we know when's a good time to stop.
-  let finalUpdate = response.body.update_seq
-  // Stream changes from the npmjs replication server...
-  let changes = new ChangesStream({
-    db: registryUrl,
-    include_docs: true
+function stripVersion () {
+  return thru(function (obj, cb) {
+    cb(null, obj.replace(/\|.*$/, ''))
   })
-  changes.on('data', function (change) {
-    let pkgName = change.doc.name
-    got(`https://api.npmjs.org/downloads/point/last-month/${encodeURIComponent(pkgName)}`, {json: true})
-    .then(response => {
-      let downloads = response.body.downloads
-      db.put({
-        subject: pkgName,
-        predicate: 'downloads',
-        object: pkgName, // yes this is on purpose
-        lastMonth: downloads || 0
-      })
-      gauge.show('...', change.seq / finalUpdate)
-    }).catch(err => {
-      console.log(err.statusCode + ' ' + pkgName)
-    })
-    // If we've reached a reasonable stopping point, lets stop gracefully
-    if (change.seq >= finalUpdate) {
-      // I *think* this will cause the event loop to cease and program termination but it'll be interesting to find out.
-      // EDIT: Nope. It doesn't. Oh well.
-      changes.pause()
-      setTimeout(process.exit, 10000)
+}
+
+function filterDuplicates () {
+  const seen = new Set()
+  return thru(function filterDuplicatesInstance (obj, cb) {
+    if (seen.has(obj)) {
+      cb()
+    } else {
+      seen.add(obj)
+      cb(null, obj)
     }
-    return
   })
+}
+
+function getDownloadCounts () {
+  return thru(function getDownloadCountInstance (obj, cb) {
+    got(`https://api.npmjs.org/downloads/point/last-month/${encodeURIComponent(obj)}`, {json: true})
+    .then(response => {
+      let downloadCount = response.body.downloads
+      downloads.put(obj, downloadCount || 0, () => {
+        cb(null, obj)
+      })
+    }).catch(err => {
+      // we dont care about errors
+      cb(null, obj)
+    })
+  })
+}
+
+let globalDoneCount = 0
+function countKeys () {
+  let counter = 0
+  return thru(function countKeysInstance (obj, cb) {
+    counter++
+    cb(null, counter)
+  })
+}
+
+function updateProgress (total) {
+  let counter = 0
+  return thru(function (obj, cb) {
+    counter++
+    gauge.show(obj, counter / total)
+    cb()
+  })
+}
+
+// TODO: Get # of package names first, create progress bar, then get download counts.
+function getPackageNameStream () {
+  return store.createKeyStream().pipe(stripVersion()).pipe(filterDuplicates())
+}
+// Get # of packages
+function getNumberOfPackages (cb) {
+  let counter = 0
+  getPackageNameStream().pipe(countKeys()).on('data', (c) => {
+    counter = c
+  }).on('finish', () => {
+    cb(null, counter)
+  })
+  return
+}
+
+getNumberOfPackages((err, count) => {
+  getPackageNameStream()
+  .pipe(getDownloadCounts())
+  .pipe(updateProgress(count))
 })
