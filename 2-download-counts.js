@@ -1,9 +1,8 @@
 'use strict'
 const got = require('got')
 const thru = require('thru')
-
 const level = require('level')
-const sublevel = require('sublevel')
+const sublevel = require('level-sublevel')
 const db = sublevel(level('npm'))
 const store = db.sublevel('store')
 const downloads = db.sublevel('metrics').sublevel('downloads')
@@ -44,7 +43,6 @@ function getDownloadCounts () {
   })
 }
 
-let globalDoneCount = 0
 function countKeys () {
   let counter = 0
   return thru(function countKeysInstance (obj, cb) {
